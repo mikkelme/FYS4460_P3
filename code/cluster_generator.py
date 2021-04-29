@@ -34,7 +34,6 @@ class TwoDim_cluster:
         perc_labels = union_connect.ravel()[np.flatnonzero(union_connect)]
         return perc_labels
 
-
     def rm_percolating_cluster(self):
         """ removes percolating cluster
             from m, lw & area arrays    """
@@ -59,13 +58,11 @@ class TwoDim_cluster:
         return np.mean(M[np.isfinite(M)])
 
 
-
     def maximal_logbin_size(self, a):
         """ Calculate maximal base exponent for
             a^x logaritmic binning for L X L system
             to be used in self.logarithmic_bins()      """
-        sum = 0
-        x = 0
+        sum = 0; x = 0
         while sum < self.L**2:
             x += 1
             sum += a**x
@@ -110,28 +107,73 @@ class TwoDim_cluster:
 
         return bin_center, n
 
+    def exwalk(self, plot = False):
+        """ Walks the exterior paths of the
+            spanning cluster (from top to bottom)
+            with a right and a left turning walker. """
+        from walk import walk
 
+        #--- Ensure top-bottom spanning cluster ---#
+        ncount = 0
+        perc_labels = []
+        while (len(perc_labels) == 0):
+            self.generate_cluster()
+            ncount += 1
+            if (ncount > 1000):
+                print("Could not make percolation cluster...")
+                break
+            vertical_connect = np.intersect1d(self.lw[0,:], self.lw[-1,:])
+            perc_labels = vertical_connect[np.where(vertical_connect > 0)]
 
+        if len(perc_labels) > 0: #Perform walk on spanning cluster
+            zz = (self.lw == perc_labels[0]) #Chose first possible spanning cluster
+
+            #--- Walk ---#
+            left_walker,right_walker = walk(zz) # Perform walk
+            SC = left_walker * right_walker     # Single Connected sites (where l*r is nonzero)
+            M_SC = np.sum(SC > 0)               # Mass of Single Connected sites
+            zz_SC= zz + SC                      # Spanning cluster + Single Connected sites
+            BB = left_walker + right_walker
+
+            if plot:
+                plt.figure(num=5, dpi=80, facecolor='w', edgecolor='k')
+                plt.title("Right walker")
+                plt.imshow(right_walker, interpolation='nearest', origin='upper') # Display spanning cluster
+                plt.colorbar()
+
+                plt.figure(num=4, dpi=80, facecolor='w', edgecolor='k')
+                plt.title("Left walker")
+                plt.imshow(left_walker, interpolation='nearest', origin='upper') # Display spanning cluster
+                plt.colorbar()
+
+                plt.figure(num=3, dpi=80, facecolor='w', edgecolor='k')
+                plt.title("Backbone (left walker + right walker)")
+                plt.imshow(BB, interpolation='nearest', origin='upper') # Display spanning cluster
+                plt.colorbar()
+
+                plt.figure(num=2, dpi=80, facecolor='w', edgecolor='k')
+                plt.title(r"Single connected bonds ($M_{SC} =$ " + f"{M_SC})")
+                plt.imshow(SC, interpolation='nearest', origin='upper') # Display spanning cluster
+                plt.colorbar()
+
+                plt.figure(num=1, dpi=80, facecolor='w', edgecolor='k')
+                plt.title("Spanning Cluster + Single connected bonds")
+                plt.imshow(zz_SC, interpolation='nearest', origin='upper') # Display spanning cluster
+                plt.colorbar()
+
+                plt.show()
+
+            return M_SC
 
 
 if __name__ == "__main__":
-    L = 10000
+    L = 100
     p_c = 0.59275
     p = 0.59275
 
 
     cluster = TwoDim_cluster(L,p)
-
-    cluster.maximal_logbin_size(1.1)
-    #s, n = cluster.density(a = 1.1, MC_cycles = 1)
-
-
-    # for i in range(100):
-    #     cluster.rm_percolating_cluster()
-    #     cluster.generate_cluster()
-
-
-    # s, n_s = cluster.n_s(a = 1.1, MC_cycles = 100)
+    cluster.exwalk(True)
 
 
 

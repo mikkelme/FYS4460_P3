@@ -19,4 +19,16 @@ def lin_fit(x,y):
     b, a = res.params
     b_err, a_err = res.bse
     return a, b, a_err, b_err
-#a, b, a_err, b_err = lin_fit(x,y)
+
+
+#--- Plot commands ---##
+# plt.figure(num=0, dpi=80, facecolor='w', edgecolor='k')
+# plt.xlabel(r"$x$", fontsize=14)
+# plt.ylabel(r"$y$", fontsize=14)
+# plt.legend(fontsize = 13)
+# plt.tight_layout(pad=1.1, w_pad=0.7, h_pad=0.2)
+# plt.savefig("../article/figures/figure.pdf", bbox_inches="tight")
+
+
+
+#
